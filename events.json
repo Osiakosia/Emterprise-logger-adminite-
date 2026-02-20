@@ -1,0 +1,10 @@
+{
+  "coin_credit": {
+    "id": 1,
+    "desc": "Coin accepted / credited"
+  },
+  "payout": {
+    "id": 2,
+    "desc": "Payout event"
+  }
+}

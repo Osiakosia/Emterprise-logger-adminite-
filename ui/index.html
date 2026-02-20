@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ccTalk Logger Enterprise</title>
+  <!-- AdminLTE + Bootstrap (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="/ui/css/style.css">
+</head>
+
+
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="/" class="nav-link">Dashboard</a>
+      </li>
+    </ul>
+
+    <ul class="navbar-nav ml-auto align-items-center">
+      <li class="nav-item mr-2">
+        <span id="connBadge" class="badge badge-secondary badge-pill">DISCONNECTED</span>
+      </li>
+      <li class="nav-item mr-3 d-none d-md-inline">
+        <small class="text-muted">Port: <span id="portLabel">-</span> @ <span id="baudLabel">-</span></small>
+      </li>
+      <li class="nav-item">
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="autoRefreshSwitch" checked>
+          <label class="custom-control-label" for="autoRefreshSwitch">Auto-refresh</label>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <a href="/" class="brand-link">
+      <span class="brand-text font-weight-light ml-2">ccTalk Logger</span>
+    </a>
+
+    <div class="sidebar">
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <li class="nav-item">
+            <a href="/" class="nav-link" id="nav-dashboard">
+              <i class="nav-icon fas fa-chart-line"></i>
+              <p>Dashboard</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/ui/pages/devices.html" class="nav-link" id="nav-devices">
+              <i class="nav-icon fas fa-microchip"></i>
+              <p>Devices</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/ui/pages/frames.html" class="nav-link" id="nav-frames">
+              <i class="nav-icon fas fa-stream"></i>
+              <p>Frames & Log</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/ui/pages/settings.html" class="nav-link" id="nav-settings">
+              <i class="nav-icon fas fa-sliders-h"></i>
+              <p>Settings</p>
+            </a>
+          </li>
+          <li class="nav-item mt-2">
+            <a href="#" class="nav-link text-danger" id="btnClearLog">
+              <i class="nav-icon fas fa-trash"></i>
+              <p>Clear log</p>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Dashboard</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item active">Dashboard</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+
+      <div class="row">
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-info">
+            <div class="inner">
+              <h3 id="rxCount">0</h3>
+              <p>RX frames</p>
+            </div>
+            <div class="icon"><i class="fas fa-arrow-down"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-success">
+            <div class="inner">
+              <h3 id="txCount">0</h3>
+              <p>TX frames</p>
+            </div>
+            <div class="icon"><i class="fas fa-arrow-up"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-warning">
+            <div class="inner">
+              <h3 id="errCount">0</h3>
+              <p>Decode errors</p>
+            </div>
+            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-6">
+          <div class="small-box bg-secondary">
+            <div class="inner">
+              <h3 id="devCount">0</h3>
+              <p>Devices seen</p>
+            </div>
+            <div class="icon"><i class="fas fa-microchip"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-stream mr-1"></i> Live frames</h3>
+              <div class="card-tools">
+                <span class="badge badge-light">last 200</span>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                  <thead class="thead-light">
+                    <tr>
+                      <th style="width:110px">Time</th>
+                      <th style="width:55px">Dir</th>
+                      <th style="width:70px">From</th>
+                      <th style="width:70px">To</th>
+                      <th>HEX</th>
+                      <th>Decoded</th>
+                    </tr>
+                  </thead>
+                  <tbody id="framesTbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-bolt mr-1"></i> Quick send</h3>
+            </div>
+            <div class="card-body">
+              <form id="sendHexForm">
+                <div class="form-group">
+                  <label>HEX frame (no spaces needed)</label>
+                  <input class="form-control" id="hexInput" placeholder="e.g. 020201FE" autocomplete="off">
+                  <small class="form-text text-muted">Sends raw HEX to serial (TX).</small>
+                </div>
+
+                <div class="form-row">
+                  <div class="col-7">
+                    <div class="custom-control custom-switch mt-2">
+                      <input type="checkbox" class="custom-control-input" id="checksumSwitch">
+                      <label class="custom-control-label" for="checksumSwitch">Append checksum</label>
+                    </div>
+                  </div>
+                  <div class="col-5 text-right">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane mr-1"></i>Send</button>
+                  </div>
+                </div>
+
+                <hr>
+                <div id="sendResult" class="small text-muted">—</div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-microchip mr-1"></i> Devices</h3>
+              <div class="card-tools">
+                <a href="/ui/pages/devices.html" class="btn btn-tool"><i class="fas fa-external-link-alt"></i></a>
+              </div>
+            </div>
+            <div class="card-body p-0" id="deviceMiniList">
+              <div class="p-3 text-muted">No devices yet.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  </div>
+  <footer class="main-footer">
+    <strong>ccTalk Logger Enterprise</strong>
+    <div class="float-right d-none d-sm-inline">Local UI</div>
+  </footer>
+</div>
+
+<script>window.PAGE_ID = "dashboard";</script>
+
+<!-- jQuery + Bootstrap + AdminLTE (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="/ui/js/app.js"></script>
+</body>
+</html>
+

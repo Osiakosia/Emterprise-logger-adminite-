@@ -1,0 +1,21 @@
+{
+  "simple_poll": {
+    "cmd": 254,
+    "data": []
+  },
+  "request_software_revision": {
+    "cmd": 241,
+    "data": []
+  },
+  "request_status": {
+    "cmd": 248,
+    "data": []
+  },
+  "payout_by_value": {
+    "cmd": 53,
+    "data": [
+      "value_lsb",
+      "value_msb"
+    ]
+  }
+}

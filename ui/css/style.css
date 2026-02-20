@@ -1,0 +1,7 @@
+
+/* Small UI tweaks on top of AdminLTE */
+.table td, .table th { vertical-align: middle; }
+.badge-pill { font-size: 0.85rem; }
+#framesTbody td { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.82rem; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+.device-card .badge { margin-right: .25rem; }

@@ -1,0 +1,14 @@
+{
+  "coin_acceptor": {
+    "address": 2,
+    "type": "acceptor"
+  },
+  "hopper": {
+    "address": 3,
+    "type": "hopper"
+  },
+  "recycler": {
+    "address": 40,
+    "type": "recycler"
+  }
+}
