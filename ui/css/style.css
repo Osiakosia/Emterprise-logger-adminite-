@@ -4,4 +4,17 @@
 .badge-pill { font-size: 0.85rem; }
 #framesTbody td { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.82rem; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+.device-list {
+  max-height: 520px;
+  overflow: auto;
+}
+
+.device-list .device-item {
+  cursor: pointer;
+}
+
+.device-list .device-item.active {
+  background: rgba(0,0,0,0.05);
+}
 .device-card .badge { margin-right: .25rem; }
