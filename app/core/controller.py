@@ -18,7 +18,7 @@ def _normalize_port(p: str | None) -> str:
     if not p:
         return ""
     p = str(p).strip()
-    if p.lower().startswith('\\\\.\\'):
+    if p.lower().startswith("\\\\.\\"):
         p = p[4:]
     return p.upper()
 
@@ -29,9 +29,10 @@ def _port_exists_windows(port_name: str | None) -> bool:
         return False
     try:
         for info in serial.tools.list_ports.comports():
-            if _normalize_port(getattr(info, 'device', None)) == want:
+            if _normalize_port(getattr(info, "device", None)) == want:
                 return True
     except Exception:
+        # Enumeration can fail; don't force disconnect.
         return True
     return False
 
@@ -39,37 +40,46 @@ def _port_exists_windows(port_name: str | None) -> bool:
 class Controller:
     """
     Background serial worker for ccTalk.
-    - Owns the SerialIO instance.
-    - Performs reconnect loop.
-    - Decodes RX frames and pushes to STATE.
-    - Provides DeviceController for TX.
+    - Owns SerialIO
+    - Connect/disconnect via request_connect/request_disconnect
+    - RX loop decodes frames and pushes to STATE
+    - DeviceController used for TX
     """
 
     def __init__(
-        self,
-        port: str,
-        baudrate: int = 9600,
-        timeout: float = 0.1,
-        host_address: int = 1,
-        logger=None,
+            self,
+            port: str,
+            baudrate: int = 9600,
+            timeout: float = 0.1,
+            host_address: int = 1,
+            logger=None,
     ):
         self.logger = logger
 
-        self.port = port
+        # ---- config first (IMPORTANT) ----
+        self.port = str(port)
         self.baudrate = int(baudrate)
         self.timeout = float(timeout)
         self.host_address = int(host_address)
 
+        if self.logger:
+            self.logger.info(
+                "Controller init: port=%s baud=%s timeout=%s host=%s",
+                self.port, self.baudrate, self.timeout, self.host_address
+            )
+
+        # ---- serial + device ----
         self.sio = SerialIO(self.port, self.baudrate, self.timeout)
         self.device = DeviceController(self.sio, logger=self.logger, host_address=self.host_address)
 
+        # ---- thread state ----
         self._stop = threading.Event()
         self._rx_thread: Optional[threading.Thread] = None
         self._buf = bytearray()
 
         self._cfg_lock = threading.Lock()
         self._want_disconnect = False
-        self._want_reconnect = True  # start tries to connect
+        self._want_reconnect = True  # on start, try connect once
 
     def start(self):
         if self._rx_thread and self._rx_thread.is_alive():
@@ -87,7 +97,7 @@ class Controller:
             self.sio.close()
         except Exception:
             pass
-        STATE.set_connected(False, 'stopped')
+        STATE.set_connected(False, "stopped")
 
     def request_disconnect(self) -> None:
         with self._cfg_lock:
@@ -97,7 +107,7 @@ class Controller:
             self.sio.close()
         except Exception:
             pass
-        STATE.set_connected(False, 'manual disconnect')
+        STATE.set_connected(False, "manual disconnect")
 
     def request_connect(self, port: str, baud: int) -> None:
         with self._cfg_lock:
@@ -124,59 +134,79 @@ class Controller:
                 want_disc = self._want_disconnect
                 want_reconn = self._want_reconnect
 
+            # ---- manual disconnect mode ----
             if want_disc:
+                # keep port closed; no auto reconnect
                 time.sleep(0.2)
                 continue
 
-            if want_reconn or (not self.sio.is_open):
+            # ---- connect only when requested (prevents blinking) ----
+            if want_reconn:
                 try:
                     self._rebuild_serial()
                     self.sio.open()
                     self._buf = bytearray()
+
                     STATE.set_config(port=self.port, baud=self.baudrate)
                     STATE.set_connected(True, None)
+
                     with self._cfg_lock:
                         self._want_reconnect = False
+
                     if self.logger:
-                        self.logger.info('Serial opened %s @ %s', self.port, self.baudrate)
+                        self.logger.info("Serial opened %s @ %s", self.port, self.baudrate)
+
                     backoff = 1.0
                     last_port_check = time.time()
+
                 except Exception as e:
                     STATE.set_connected(False, str(e))
                     if self.logger:
-                        self.logger.warning('Serial open failed (%s). Retrying...', e)
+                        self.logger.warning("Serial open failed (%s). Retrying...", e)
                     time.sleep(backoff)
                     backoff = min(backoff * 1.6, 10.0)
                     continue
 
+            # If not connected (open failed earlier) do nothing until reconnect requested
+            if not self.sio.is_open:
+                time.sleep(0.2)
+                continue
+
+            # ---- USB unplug detection ----
             now = time.time()
             if (now - last_port_check) >= 1.0:
                 last_port_check = now
                 if not _port_exists_windows(self.port):
-                    STATE.set_connected(False, f'Port removed: {self.port}')
+                    STATE.set_connected(False, f"Port removed: {self.port}")
                     if self.logger:
-                        self.logger.warning('Port disappeared: %s', self.port)
+                        self.logger.warning("Port disappeared: %s", self.port)
                     try:
                         self.sio.close()
                     except Exception:
                         pass
-                    time.sleep(0.3)
+                    with self._cfg_lock:
+                        self._want_reconnect = True
+                    time.sleep(0.5)
                     continue
 
+            # ---- read ----
             try:
                 chunk = self.sio.read(1024)
             except (SerialException, OSError) as e:
                 STATE.set_connected(False, str(e))
                 if self.logger:
-                    self.logger.warning('Serial error (%s). Reconnecting...', e)
+                    self.logger.warning("Serial error (%s). Reconnecting...", e)
                 try:
                     self.sio.close()
                 except Exception:
                     pass
+                with self._cfg_lock:
+                    self._want_reconnect = True
                 time.sleep(backoff)
                 backoff = min(backoff * 1.6, 10.0)
                 continue
 
+            # ---- decode ----
             if chunk:
                 self._buf.extend(chunk)
                 frames, self._buf = try_parse_frames(self._buf)
@@ -185,18 +215,14 @@ class Controller:
                     dec = decode_frame(fr)
                     rec = FrameRecord(
                         ts=time.time(),
-                        direction='RX',
+                        direction="RX",
                         addr=int(dec.src),
                         raw_hex=fr.hex(),
-                        decoded={**dec.to_dict(), 'header_name': header_name(dec.header)},
+                        decoded={**dec.to_dict(), "header_name": header_name(dec.header)},
                     )
                     STATE.add_frame(rec)
                     if self.logger:
-                        self.logger.info('RX %s', fr.hex())
+                        self.logger.info("RX %s", fr.hex())
 
             time.sleep(0.01)
 
-        try:
-            self.sio.close()
-        except Exception:
-            pass

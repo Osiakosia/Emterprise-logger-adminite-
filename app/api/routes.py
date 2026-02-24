@@ -18,6 +18,8 @@ def create_app() -> Flask:
     app = Flask(__name__, static_folder=ui_dir, static_url_path='/ui')
 
     logger = setup_logging()
+    # logger.info("Logging OK: routes.py started")
+
     app.logger.handlers = logger.handlers
     app.logger.setLevel(logger.level)
 
