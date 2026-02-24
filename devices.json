@@ -1,14 +1,10 @@
 {
-  "coin_acceptor": {
-    "address": 2,
-    "type": "acceptor"
-  },
-  "hopper": {
-    "address": 3,
-    "type": "hopper"
-  },
-  "recycler": {
-    "address": 40,
-    "type": "recycler"
-  }
+  "devices": [
+    { "name": "Coin acceptor", "address": 2, "type": "Coin acceptor" },
+    { "name": "Counter hopper", "address": 3, "type": "Counter hopper" },
+    { "name": "Payout 1 hopper", "address": 4, "type": "Payout 1 hopper" },
+    { "name": "Payout 2 hopper", "address": 5, "type": "Payout 2 hopper" },
+    { "name": "Bus controller", "address": 49, "type": "Alberichi Bus controller" },
+    { "name": "Recycler", "address": 40, "type": "JCM iPRO-RC recycler" }
+  ]
 }
