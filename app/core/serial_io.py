@@ -1,39 +1,96 @@
+# app/core/serial_io.py
 from __future__ import annotations
-import serial
+
+import threading
 from typing import Optional
 
+import serial
+from serial.serialutil import SerialException
+
+
 class SerialIO:
-    def __init__(self):
-        self.ser: Optional[serial.Serial] = None
+    """
+    Serial wrapper for ccTalk.
 
-    def open(self, port: str, baud: int, timeout: float = 0.05):
-        self.close()
-        self.ser = serial.Serial(port=port, baudrate=baud, timeout=timeout)
-        # ccTalk is single-wire TTL in many devices; with USB-RS232 adapters you usually need
-        # proper wiring/level shifting. This is just the host side.
+    Does NOT open automatically; call open().
+    Thread-safe read/write.
+    """
 
-    def close(self):
-        if self.ser and self.ser.is_open:
-            self.ser.close()
-        self.ser = None
+    def __init__(self, port: str, baudrate: int = 9600, timeout: float = 0.1, **_ignored):
+        self.port = port
+        self.baudrate = int(baudrate)
+        self.timeout = float(timeout)
 
+        self._lock = threading.Lock()
+        self._ser: Optional[serial.Serial] = None
+
+    @property
     def is_open(self) -> bool:
-        return bool(self.ser and self.ser.is_open)
+        return bool(self._ser and self._ser.is_open)
 
-    def write(self, data: bytes):
-        if not self.ser or not self.ser.is_open:
-            raise RuntimeError("Serial not open")
-        self.ser.write(data)
+    def open(self) -> None:
+        with self._lock:
+            if self._ser and self._ser.is_open:
+                return
 
-    def read(self, n: int = 1) -> bytes:
-        if not self.ser or not self.ser.is_open:
-            return b""
-        return self.ser.read(n)
+            port = self.port
+            # Windows: COM10+ may need \\.\COM10
+            if isinstance(port, str) and port.upper().startswith("COM"):
+                try:
+                    n = int(port[3:])
+                    if n >= 10 and not port.startswith("\\\\.\\"):
+                        port = "\\\\.\\" + port
+                except ValueError:
+                    pass
 
-    def read_available(self) -> bytes:
-        if not self.ser or not self.ser.is_open:
-            return b""
-        n = self.ser.in_waiting
-        if n:
-            return self.ser.read(n)
-        return b""
+            self._ser = serial.Serial(
+                port,
+                self.baudrate,
+                timeout=self.timeout,
+                write_timeout=1,
+            )
+            try:
+                self._ser.reset_input_buffer()
+                self._ser.reset_output_buffer()
+            except Exception:
+                pass
+
+    def probe(self) -> None:
+        """Touch underlying handle; raises if unplugged/stale.""" 
+        with self._lock:
+            if not (self._ser and self._ser.is_open):
+                raise SerialException("Serial not open")
+            try:
+                _ = self._ser.in_waiting
+            except Exception:
+                self.close()
+                raise
+
+    def close(self) -> None:
+        with self._lock:
+            if self._ser:
+                try:
+                    if self._ser.is_open:
+                        self._ser.close()
+                finally:
+                    self._ser = None
+
+    def read(self, n: int = 1024) -> bytes:
+        with self._lock:
+            if not (self._ser and self._ser.is_open):
+                return b""
+            try:
+                return self._ser.read(n)
+            except SerialException:
+                self.close()
+                raise
+
+    def write(self, data: bytes) -> int:
+        with self._lock:
+            if not (self._ser and self._ser.is_open):
+                return 0
+            try:
+                return self._ser.write(data)
+            except SerialException:
+                self.close()
+                raise

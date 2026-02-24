@@ -1,11 +1,13 @@
-from dataclasses import dataclass
+import os
 
-@dataclass
-class AppConfig:
-    default_port: str = "COM4"
-    default_baud: int = 9600
-    read_timeout_s: float = 0.05
-    validate_checksum: bool = True
-    max_log_lines: int = 5000
+class Config:
+    # Serial
+    COM_PORT = os.getenv("COM_PORT", "COM4")
+    BAUDRATE = int(os.getenv("BAUDRATE", "9600"))
+    SER_TIMEOUT = float(os.getenv("SER_TIMEOUT", "0.1"))
 
-CONFIG = AppConfig()
+    # ccTalk addressing
+    HOST_ADDRESS = int(os.getenv("HOST_ADDRESS", "1"))
+
+    # Runtime
+    START_CONTROLLER = os.getenv("START_CONTROLLER", "1") == "1"

@@ -2,6 +2,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Tuple, Dict, Any
 
+# Optional thesaurus dictionaries (friendly names)
+try:
+    from .thesaurus import DEVICE_NAMES as TH_DEVICE_NAMES, HEADERS as TH_HEADERS
+except Exception:
+    TH_DEVICE_NAMES = {}
+    TH_HEADERS = {}
+
 def checksum_cctalk(data: bytes) -> int:
     # ccTalk uses 8-bit checksum so that sum(all bytes) % 256 == 0
     return (-sum(data)) & 0xFF
@@ -28,9 +35,12 @@ class DecodedFrame:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "dest": self.dest,
+            "dest_name": device_name(self.dest),
             "len": self.length,
             "src": self.src,
+            "src_name": device_name(self.src),
             "header": self.header,
+            "header_name": header_name(self.header),
             "data_hex": self.data.hex(),
             "checksum": self.checksum,
             "valid_checksum": self.valid,
@@ -78,4 +88,13 @@ HEADER_NAMES = {
 }
 
 def header_name(header: int) -> str:
-    return HEADER_NAMES.get(header, f"Header {header}")
+    # Prefer thesaurus if present
+    if TH_HEADERS:
+        return TH_HEADERS.get(header, HEADER_NAMES.get(header, f"0x{header:02X}"))
+    return HEADER_NAMES.get(header, f"0x{header:02X}")
+
+def device_name(addr: int) -> str:
+    if TH_DEVICE_NAMES:
+        return TH_DEVICE_NAMES.get(addr, f"0x{addr:02X}")
+    return f"0x{addr:02X}"
+
