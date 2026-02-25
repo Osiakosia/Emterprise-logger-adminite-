@@ -13,7 +13,10 @@ def setup_logging(log_dir: str = "logs", filename: str = "session.log") -> loggi
 
     fmt = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 
-    fh = RotatingFileHandler(Path(log_dir) / filename, maxBytes=2_000_000, backupCount=5, encoding="utf-8")
+    log_path = (Path(log_dir) / filename).resolve()
+    print("Logging to:", log_path)  # <-- pridėk šitą (laikinai)
+
+    fh = RotatingFileHandler(log_path, maxBytes=2_000_000, backupCount=5, encoding="utf-8")
     fh.setFormatter(fmt)
     fh.setLevel(logging.INFO)
 

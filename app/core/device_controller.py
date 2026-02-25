@@ -21,6 +21,15 @@ class DeviceController:
         self.host_address = int(host_address)
 
     def send(self, dest: int, header: int, data: bytes = b"") -> Dict[str, Any]:
+        def send(self, dest: int, header: int, data: bytes = b"") -> Dict[str, Any]:
+            if self.logger:
+                self.logger.warning(
+                    "DeviceController logger=%s handlers=%s",
+                    getattr(self.logger, "name", None),
+                    [type(h).__name__ for h in getattr(self.logger, "handlers", [])],
+                )
+            frame = build_frame(dest=int(dest), src=self.host_address, header=int(header), data=data)
+            ...
         frame = build_frame(dest=int(dest), src=self.host_address, header=int(header), data=data)
 
         # TX to wire

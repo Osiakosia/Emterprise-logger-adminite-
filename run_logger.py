@@ -12,5 +12,5 @@ if __name__ == "__main__":
         port=port,
         debug=False,
         threaded=True,
-        use_reloader=False,  # IMPORTANT: prevents double-start (serial port opens twice)
+        # IMPORTANT: prevents double-start (serial port opens twice)
     )

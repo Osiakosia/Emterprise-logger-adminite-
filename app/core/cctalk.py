@@ -2,12 +2,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Tuple, Dict, Any
 
-# Optional thesaurus dictionaries (friendly names)
-try:
-    from .thesaurus import DEVICE_NAMES as TH_DEVICE_NAMES, HEADERS as TH_HEADERS
-except Exception:
-    TH_DEVICE_NAMES = {}
-    TH_HEADERS = {}
+from app.core.thesaurus import HEADERS as TH_HEADERS, DEVICE_NAMES as TH_DEVICE_NAMES
+
 
 def checksum_cctalk(data: bytes) -> int:
     # ccTalk uses 8-bit checksum so that sum(all bytes) % 256 == 0

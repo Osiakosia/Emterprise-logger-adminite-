@@ -1,4 +1,3 @@
-# app/core/controller.py
 from __future__ import annotations
 
 import threading
@@ -32,54 +31,59 @@ def _port_exists_windows(port_name: str | None) -> bool:
             if _normalize_port(getattr(info, "device", None)) == want:
                 return True
     except Exception:
-        # Enumeration can fail; don't force disconnect.
+        # enumeration may fail; don't hard-disconnect
         return True
     return False
 
 
 class Controller:
-    """
-    Background serial worker for ccTalk.
-    - Owns SerialIO
-    - Connect/disconnect via request_connect/request_disconnect
-    - RX loop decodes frames and pushes to STATE
-    - DeviceController used for TX
+    """Background serial worker for ccTalk.
+
+    Responsibilities:
+      - Owns SerialIO and opens/closes it.
+      - Performs reconnect loop.
+      - Decodes RX frames and pushes them to STATE.
+      - Provides DeviceController for TX (DeviceController uses same SerialIO).
+
+    IMPORTANT:
+      - Flask routes must NOT touch the serial port directly.
+      - Use request_connect/request_disconnect to control it.
     """
 
     def __init__(
-            self,
-            port: str,
-            baudrate: int = 9600,
-            timeout: float = 0.1,
-            host_address: int = 1,
-            logger=None,
+        self,
+        port: str,
+        baudrate: int = 9600,
+        timeout: float = 0.1,
+        host_address: int = 1,
+        logger=None,
     ):
         self.logger = logger
 
-        # ---- config first (IMPORTANT) ----
         self.port = str(port)
         self.baudrate = int(baudrate)
         self.timeout = float(timeout)
         self.host_address = int(host_address)
 
-        if self.logger:
-            self.logger.info(
-                "Controller init: port=%s baud=%s timeout=%s host=%s",
-                self.port, self.baudrate, self.timeout, self.host_address
-            )
-
-        # ---- serial + device ----
         self.sio = SerialIO(self.port, self.baudrate, self.timeout)
         self.device = DeviceController(self.sio, logger=self.logger, host_address=self.host_address)
 
-        # ---- thread state ----
         self._stop = threading.Event()
         self._rx_thread: Optional[threading.Thread] = None
         self._buf = bytearray()
 
         self._cfg_lock = threading.Lock()
         self._want_disconnect = False
-        self._want_reconnect = True  # on start, try connect once
+        self._want_reconnect = True  # start tries to connect
+
+        if self.logger:
+            self.logger.info(
+                "Controller init: port=%s baud=%s timeout=%s host=%s",
+                self.port,
+                self.baudrate,
+                self.timeout,
+                self.host_address,
+            )
 
     def start(self):
         if self._rx_thread and self._rx_thread.is_alive():
@@ -118,6 +122,7 @@ class Controller:
         STATE.set_config(port=self.port, baud=self.baudrate)
 
     def _rebuild_serial(self):
+        # always rebuild SerialIO to drop stale handles
         try:
             self.sio.close()
         except Exception:
@@ -134,31 +139,25 @@ class Controller:
                 want_disc = self._want_disconnect
                 want_reconn = self._want_reconnect
 
-            # ---- manual disconnect mode ----
             if want_disc:
-                # keep port closed; no auto reconnect
+                # stay idle until connect requested
                 time.sleep(0.2)
                 continue
 
-            # ---- connect only when requested (prevents blinking) ----
-            if want_reconn:
+            # connect if requested or not open
+            if want_reconn or (not self.sio.is_open):
                 try:
                     self._rebuild_serial()
                     self.sio.open()
                     self._buf = bytearray()
-
                     STATE.set_config(port=self.port, baud=self.baudrate)
                     STATE.set_connected(True, None)
-
                     with self._cfg_lock:
                         self._want_reconnect = False
-
                     if self.logger:
                         self.logger.info("Serial opened %s @ %s", self.port, self.baudrate)
-
                     backoff = 1.0
                     last_port_check = time.time()
-
                 except Exception as e:
                     STATE.set_connected(False, str(e))
                     if self.logger:
@@ -167,12 +166,7 @@ class Controller:
                     backoff = min(backoff * 1.6, 10.0)
                     continue
 
-            # If not connected (open failed earlier) do nothing until reconnect requested
-            if not self.sio.is_open:
-                time.sleep(0.2)
-                continue
-
-            # ---- USB unplug detection ----
+            # USB unplug detection on Windows
             now = time.time()
             if (now - last_port_check) >= 1.0:
                 last_port_check = now
@@ -184,12 +178,10 @@ class Controller:
                         self.sio.close()
                     except Exception:
                         pass
-                    with self._cfg_lock:
-                        self._want_reconnect = True
-                    time.sleep(0.5)
+                    time.sleep(0.3)
                     continue
 
-            # ---- read ----
+            # RX
             try:
                 chunk = self.sio.read(1024)
             except (SerialException, OSError) as e:
@@ -200,13 +192,10 @@ class Controller:
                     self.sio.close()
                 except Exception:
                     pass
-                with self._cfg_lock:
-                    self._want_reconnect = True
                 time.sleep(backoff)
                 backoff = min(backoff * 1.6, 10.0)
                 continue
 
-            # ---- decode ----
             if chunk:
                 self._buf.extend(chunk)
                 frames, self._buf = try_parse_frames(self._buf)
@@ -226,3 +215,7 @@ class Controller:
 
             time.sleep(0.01)
 
+        try:
+            self.sio.close()
+        except Exception:
+            pass

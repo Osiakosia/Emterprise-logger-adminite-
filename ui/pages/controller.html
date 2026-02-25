@@ -1,300 +1,530 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Device Controller | ccTalk Logger</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-  <link rel="stylesheet" href="/ui/css/style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Device Controller | ccTalk Logger</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="/ui/css/style.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-      </li>
-      <li class="nav-item d-none d-sm-inline-block">
-        <a href="/" class="nav-link">Dashboard</a>
-      </li>
-    </ul>
-
-    <ul class="navbar-nav ml-auto align-items-center">
-      <li class="nav-item mr-2">
-        <span id="connBadge" class="badge badge-secondary badge-pill mr-2">DISCONNECTED</span>
-        <span id="healthBadge" class="badge badge-secondary badge-pill">UNKNOWN</span>
-      </li>
-      <li class="nav-item mr-3 d-none d-md-inline">
-        <small class="text-muted">Port: <span id="portLabel">-</span> @ <span id="baudLabel">-</span></small>
-      </li>
-      <li class="nav-item">
-        <div class="custom-control custom-switch">
-          <input type="checkbox" class="custom-control-input" id="autoRefreshSwitch" checked>
-          <label class="custom-control-label" for="autoRefreshSwitch">Auto-refresh</label>
-        </div>
-      </li>
-    </ul>
-  </nav>
-
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="/" class="brand-link">
-      <span class="brand-text font-weight-light ml-2">ccTalk Logger</span>
-    </a>
-    <div class="sidebar">
-      <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-          <li class="nav-item"><a href="/" class="nav-link" id="nav-dashboard"><i class="nav-icon fas fa-chart-line"></i><p>Dashboard</p></a></li>
-          <li class="nav-item"><a href="/ui/pages/devices.html" class="nav-link" id="nav-devices"><i class="nav-icon fas fa-microchip"></i><p>Devices</p></a></li>
-          <li class="nav-item"><a href="/ui/pages/controller.html" class="nav-link active" id="nav-controller"><i class="nav-icon fas fa-gamepad"></i><p>Controller</p></a></li>
-          <li class="nav-item"><a href="/ui/pages/frames.html" class="nav-link" id="nav-frames"><i class="nav-icon fas fa-stream"></i><p>Frames & Log</p></a></li>
-          <li class="nav-item"><a href="/ui/pages/settings.html" class="nav-link" id="nav-settings"><i class="nav-icon fas fa-sliders-h"></i><p>Settings</p></a></li>
-          <li class="nav-item mt-2"><a href="#" class="nav-link text-danger" id="btnClearLog"><i class="nav-icon fas fa-trash"></i><p>Clear log</p></a></li>
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/" class="nav-link">Dashboard</a>
+            </li>
         </ul>
-      </nav>
-    </div>
-  </aside>
 
-  <div class="content-wrapper">
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6"><h1>Device Controller</h1></div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
-              <li class="breadcrumb-item active">Controller</li>
-            </ol>
-          </div>
+        <ul class="navbar-nav ml-auto align-items-center">
+            <li class="nav-item mr-2">
+                <span id="connBadge" class="badge badge-secondary badge-pill mr-2">DISCONNECTED</span>
+                <span id="healthBadge" class="badge badge-secondary badge-pill">UNKNOWN</span>
+            </li>
+            <li class="nav-item mr-3 d-none d-md-inline">
+                <small class="text-muted">Port: <span id="portLabel">-</span> @ <span id="baudLabel">-</span></small>
+            </li>
+            <li class="nav-item">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="autoRefreshSwitch" checked>
+                    <label class="custom-control-label" for="autoRefreshSwitch">Auto-refresh</label>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/" class="brand-link">
+            <span class="brand-text font-weight-light ml-2">ccTalk Logger</span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                    data-accordion="false">
+                    <li class="nav-item"><a href="/" class="nav-link" id="nav-dashboard"><i
+                            class="nav-icon fas fa-chart-line"></i>
+                        <p>Dashboard</p></a></li>
+                    <li class="nav-item"><a href="/ui/pages/devices.html" class="nav-link" id="nav-devices"><i
+                            class="nav-icon fas fa-microchip"></i>
+                        <p>Devices</p></a></li>
+                    <li class="nav-item"><a href="/ui/pages/controller.html" class="nav-link active"
+                                            id="nav-controller"><i class="nav-icon fas fa-gamepad"></i>
+                        <p>Controller</p></a></li>
+                    <li class="nav-item"><a href="/ui/pages/frames.html" class="nav-link" id="nav-frames"><i
+                            class="nav-icon fas fa-stream"></i>
+                        <p>Frames & Log</p></a></li>
+                    <li class="nav-item"><a href="/ui/pages/settings.html" class="nav-link" id="nav-settings"><i
+                            class="nav-icon fas fa-sliders-h"></i>
+                        <p>Settings</p></a></li>
+                    <li class="nav-item mt-2"><a href="#" class="nav-link text-danger" id="btnClearLog"><i
+                            class="nav-icon fas fa-trash"></i>
+                        <p>Clear log</p></a></li>
+                </ul>
+            </nav>
         </div>
-      </div>
-    </section>
+    </aside>
 
-    <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-lg-4">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-list mr-1"></i> Devices</h3>
-                <div class="card-tools"><span class="badge badge-light" id="deviceCountBadge">0</span></div>
-              </div>
-              <div class="card-body p-2">
-                <div class="input-group input-group-sm mb-2">
-                  <input class="form-control" id="deviceSearch" placeholder="Search (addr/name)…" autocomplete="off">
-                  <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" id="btnRefreshDevices" title="Refresh"><i class="fas fa-sync"></i></button>
-                  </div>
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6"><h1>Device Controller</h1></div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Controller</li>
+                        </ol>
+                    </div>
                 </div>
-                <div class="small text-muted mb-2">Tip: If list is empty, use <b>Scan</b> below or send a <b>Poll</b> to a known address.</div>
-                <div id="deviceList" class="device-list"></div>
-                <hr class="my-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div class="font-weight-bold"><i class="fas fa-radar mr-1"></i> Scan addresses</div>
-                  <span class="small text-muted" id="scanStatus">—</span>
-                </div>
-                <div class="form-row">
-                  <div class="col-4">
-                    <input class="form-control form-control-sm" id="scanStart" value="1" type="number" min="1" max="255">
-                    <small class="text-muted">Start</small>
-                  </div>
-                  <div class="col-4">
-                    <input class="form-control form-control-sm" id="scanEnd" value="50" type="number" min="1" max="255">
-                    <small class="text-muted">End</small>
-                  </div>
-                  <div class="col-4">
-                    <input class="form-control form-control-sm" id="scanDelay" value="80" type="number" min="0" max="2000">
-                    <small class="text-muted">ms delay</small>
-                  </div>
-                </div>
-                <div class="btn-group btn-group-sm mt-2" role="group">
-                  <button class="btn btn-outline-primary" id="btnScan"><i class="fas fa-play mr-1"></i>Scan</button>
-                  <button class="btn btn-outline-secondary" id="btnStopScan"><i class="fas fa-stop mr-1"></i>Stop</button>
-                </div>
-              </div>
             </div>
-          </div>
+        </section>
 
-          <div class="col-lg-8">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-gamepad mr-1"></i> Command panel</h3>
-                <div class="card-tools"><span class="badge badge-dark" id="selAddrBadge">—</span></div>
-              </div>
-              <div class="card-body">
-                <div class="callout callout-info">
-                  <h5 class="mb-1"><i class="fas fa-info-circle mr-1"></i>How this works</h5>
-                  <div class="small">Select a device on the left, then use the tabs to send device-specific ccTalk commands.</div>
-                </div>
-
-                <div class="d-flex align-items-center mb-3">
-                  <span class="badge badge-dark mr-2" id="selAddr">—</span>
-                  <div>
-                    <div class="font-weight-bold" id="selName">No device selected</div>
-                    <div class="small text-muted" id="selMeta">—</div>
-                  </div>
-                </div>
-
-                <div class="card card-outline card-primary card-tabs mb-0">
-                  <div class="card-header p-0 pt-1">
-                    <ul class="nav nav-tabs" role="tablist">
-                      <li class="nav-item"><a class="nav-link active" id="tab-coin" data-toggle="pill" href="#pane-coin" role="tab"><i class="fas fa-coins mr-1"></i>Coin</a></li>
-                      <li class="nav-item"><a class="nav-link" id="tab-hopper" data-toggle="pill" href="#pane-hopper" role="tab"><i class="fas fa-money-bill-wave mr-1"></i>Hopper</a></li>
-                      <li class="nav-item"><a class="nav-link" id="tab-recycler" data-toggle="pill" href="#pane-recycler" role="tab"><i class="fas fa-recycle mr-1"></i>Recycler</a></li>
-                      <li class="nav-item"><a class="nav-link" id="tab-custom" data-toggle="pill" href="#pane-custom" role="tab"><i class="fas fa-tools mr-1"></i>Custom</a></li>
-                    </ul>
-                  </div>
-
-                  <div class="card-body">
-                    <div class="tab-content">
-
-                      <div class="tab-pane fade show active" id="pane-coin" role="tabpanel">
-                        <div class="small text-muted mb-2">Common coin headers: status (248), buffered credit/error (229), inhibit (228/231).</div>
-                        <div class="btn-toolbar flex-wrap" role="toolbar">
-                          <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="254">Poll (254)</button>
-                          <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="248">Status (248)</button>
-                          <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="229">Read Credit/Error (229)</button>
-                          <button class="btn btn-sm btn-outline-secondary mr-2 mb-2" data-header="241">SW Rev (241)</button>
-                          <button class="btn btn-sm btn-outline-secondary mr-2 mb-2" data-header="242">Serial # (242)</button>
-                          <button class="btn btn-sm btn-outline-secondary mr-2 mb-2" data-header="246">Product (246)</button>
-                        </div>
-                        <hr class="my-2">
-                        <div class="btn-toolbar flex-wrap" role="toolbar">
-                          <button class="btn btn-sm btn-success mr-2 mb-2" data-header="228" data-hex="01">Master Enable (228,01)</button>
-                          <button class="btn btn-sm btn-danger mr-2 mb-2" data-header="228" data-hex="00">Master Disable (228,00)</button>
-                          <button class="btn btn-sm btn-success mr-2 mb-2" data-header="231" data-hex="FFFF">Enable All Channels (231,FFFF)</button>
-                          <button class="btn btn-sm btn-danger mr-2 mb-2" data-header="231" data-hex="0000">Disable All Channels (231,0000)</button>
-                        </div>
-                      </div>
-
-                      <div class="tab-pane fade" id="pane-hopper" role="tabpanel">
-                        <div class="small text-muted mb-2">Smart payout fixed to <b>€2</b>. Amount must be multiple of €2.</div>
-                        <div class="btn-toolbar flex-wrap" role="toolbar">
-                          <button class="btn btn-sm btn-warning mr-2 mb-2" id="btnHopperEnable"><i class="fas fa-power-off mr-1"></i>Enable (164)</button>
-                          <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="166">Status (166)</button>
-                          <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="168">Dispense Count (168)</button>
-                          <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="171">Hopper Coin (171)</button>
-                          <button class="btn btn-sm btn-danger mr-2 mb-2" id="btnHopperStop"><i class="fas fa-stop mr-1"></i>Emergency Stop (172)</button>
-                        </div>
-                        <hr class="my-2">
-                        <div class="form-row">
-                          <div class="col-md-4">
-                            <label class="mb-1">Payout amount (€)</label>
-                            <input id="hopperAmount" class="form-control form-control-sm" type="number" step="2" min="0" value="2">
-                            <small class="text-muted">€2 coins only</small>
-                          </div>
-                          <div class="col-md-4">
-                            <label class="mb-1">Coins</label>
-                            <input id="hopperCoins" class="form-control form-control-sm" type="number" readonly>
-                            <small class="text-muted">amount / 2</small>
-                          </div>
-                          <div class="col-md-4 d-flex align-items-end">
-                            <button class="btn btn-sm btn-primary w-100" id="btnHopperPay"><i class="fas fa-euro-sign mr-1"></i>Pay (167)</button>
-                          </div>
-                        </div>
-                        <div class="btn-group btn-group-sm mt-2" role="group">
-                          <button class="btn btn-outline-primary" data-quick-eur="2">€2</button>
-                          <button class="btn btn-outline-primary" data-quick-eur="4">€4</button>
-                          <button class="btn btn-outline-primary" data-quick-eur="10">€10</button>
-                          <button class="btn btn-outline-primary" data-quick-eur="20">€20</button>
-                        </div>
-                      </div>
-
-                      <div class="tab-pane fade" id="pane-recycler" role="tabpanel">
-                        <div class="small text-muted mb-2">Escrow uses <b>Route bill (154)</b>: stack (01) or return (00). Auto-poll uses (159).</div>
-                        <div class="btn-toolbar flex-wrap" role="toolbar">
-                          <button class="btn btn-sm btn-success mr-2 mb-2" id="btnEscrowStack"><i class="fas fa-check mr-1"></i>Stack/Accept (154,01)</button>
-                          <button class="btn btn-sm btn-danger mr-2 mb-2" id="btnEscrowReturn"><i class="fas fa-undo mr-1"></i>Return (154,00)</button>
-                          <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="159">Read Bill Events (159)</button>
-                          <button class="btn btn-sm btn-outline-secondary mr-2 mb-2" data-header="157">Bill ID (157)</button>
-                        </div>
-                        <hr class="my-2">
-                        <div class="form-row">
-                          <div class="col-md-4">
-                            <label class="mb-1">Poll interval (ms)</label>
-                            <input id="billPollMs" class="form-control form-control-sm" type="number" min="200" max="5000" value="250">
-                          </div>
-                          <div class="col-md-8 d-flex align-items-end">
-                            <button class="btn btn-sm btn-outline-primary mr-2" id="btnStartBillPoll"><i class="fas fa-play mr-1"></i>Start auto-poll</button>
-                            <button class="btn btn-sm btn-outline-secondary" id="btnStopBillPoll"><i class="fas fa-stop mr-1"></i>Stop</button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="tab-pane fade" id="pane-custom" role="tabpanel">
-                        <div class="row">
-                          <div class="col-md-7">
-                            <div class="card card-outline card-secondary mb-0">
-                              <div class="card-header"><h3 class="card-title"><i class="fas fa-terminal mr-1"></i> Custom command</h3></div>
-                              <div class="card-body">
-                                <div class="form-row">
-                                  <div class="col-4">
-                                    <label class="small">Header (dec)</label>
-                                    <input class="form-control form-control-sm" id="customHeader" type="number" value="254" min="0" max="255">
-                                  </div>
-                                  <div class="col-8">
-                                    <label class="small">Data (hex, optional)</label>
-                                    <input class="form-control form-control-sm" id="customData" placeholder="e.g. 0102A0">
-                                  </div>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-list mr-1"></i> Devices</h3>
+                                <div class="card-tools"><span class="badge badge-light" id="deviceCountBadge">0</span>
                                 </div>
-                                <button class="btn btn-sm btn-secondary mt-2" id="btnSendCustom"><i class="fas fa-paper-plane mr-1"></i>Send</button>
-                                <div id="cmdResult" class="small text-muted mt-2">—</div>
-                              </div>
                             </div>
-                          </div>
-                          <div class="col-md-5">
-                            <div class="small text-muted">Tip: Use custom for vendor-specific commands. Data is hex without spaces.</div>
-                            <div class="btn-toolbar flex-wrap mt-2">
-                              <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="245">Equipment Category (245)</button>
-                              <button class="btn btn-sm btn-outline-primary mr-2 mb-2" data-header="244">Manufacturer ID (244)</button>
-                              <button class="btn btn-sm btn-outline-danger mr-2 mb-2" data-header="253">Reset (253)</button>
+                            <div class="card-body p-2">
+                                <div class="input-group input-group-sm mb-2">
+                                    <input class="form-control" id="deviceSearch" placeholder="Paieška (adresas/pav.)…"
+                                           autocomplete="off">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" id="btnRefreshDevices"
+                                                title="Atnaujinti"><i class="fas fa-sync"></i></button>
+                                    </div>
+                                </div>
+                                <div class="small text-muted mb-2">
+                                    Patarimas: jei sąrašas tuščias, naudok <b>Skenuoti</b> žemiau arba siųsk <b>Poll</b>
+                                    į žinomą adresą.
+                                </div>
+                                <div id="deviceList" class="device-list"></div>
+                                <hr class="my-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="font-weight-bold"><i class="fas fa-radar mr-1"></i> Skenuoti adresus</div>
+                                    <span class="small text-muted" id="scanStatus">—</span>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-4">
+                                        <input class="form-control form-control-sm" id="scanStart" value="1"
+                                               type="number" min="1" max="255">
+                                        <small class="text-muted">Nuo</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <input class="form-control form-control-sm" id="scanEnd" value="50"
+                                               type="number" min="1" max="255">
+                                        <small class="text-muted">Iki</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <input class="form-control form-control-sm" id="scanDelay" value="80"
+                                               type="number" min="0" max="2000">
+                                        <small class="text-muted">ms pauzė</small>
+                                    </div>
+                                </div>
+                                <div class="btn-group btn-group-sm mt-2" role="group">
+                                    <button class="btn btn-outline-primary" id="btnScan"><i
+                                            class="fas fa-play mr-1"></i>Skenuoti
+                                    </button>
+                                    <button class="btn btn-outline-secondary" id="btnStopScan"><i
+                                            class="fas fa-stop mr-1"></i>Stabdyti
+                                    </button>
+                                </div>
                             </div>
-                          </div>
                         </div>
-                      </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-gamepad mr-1"></i> Command panel</h3>
+                                <div class="card-tools"><span class="badge badge-dark" id="selAddrBadge">—</span></div>
+                            </div>
+                            <div class="card-body">
+                                <div class="callout callout-info">
+                                    <h5 class="mb-1"><i class="fas fa-info-circle mr-1"></i>Kaip tai veikia</h5>
+                                    <div class="small">
+                                        Pasirink įrenginį kairėje, tada naudok tab’us siųsti device-specific ccTalk komandas.
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="badge badge-dark mr-2" id="selAddr">—</span>
+                                    <div>
+                                        <div class="font-weight-bold" id="selName">Neparinktas įrenginys</div>
+                                        <div class="small text-muted" id="selMeta">—</div>
+                                    </div>
+                                </div>
+
+                                <div class="card card-outline card-primary card-tabs mb-0">
+                                    <div class="card-header p-0 pt-1">
+                                        <ul class="nav nav-tabs" role="tablist">
+                                            <li class="nav-item"><a class="nav-link active" id="tab-coin"
+                                                                    data-toggle="pill" href="#pane-coin" role="tab"><i
+                                                    class="fas fa-coins mr-1"></i>Coin</a></li>
+                                            <li class="nav-item"><a class="nav-link" id="tab-hopper" data-toggle="pill"
+                                                                    href="#pane-hopper" role="tab"><i
+                                                    class="fas fa-money-bill-wave mr-1"></i>Hopper</a></li>
+                                            <li class="nav-item"><a class="nav-link" id="tab-recycler"
+                                                                    data-toggle="pill" href="#pane-recycler" role="tab"><i
+                                                    class="fas fa-recycle mr-1"></i>Recycler</a></li>
+                                            <li class="nav-item"><a class="nav-link" id="tab-custom" data-toggle="pill"
+                                                                    href="#pane-custom" role="tab"><i
+                                                    class="fas fa-tools mr-1"></i>Custom</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div class="tab-content">
+
+                                            <div class="tab-pane fade show active" id="pane-coin" role="tabpanel">
+                                                <div class="small text-muted mb-2">
+                                                    Coin greitos komandos: status (248), buffered credit/error (229), inhibit (228/231).
+                                                </div>
+                                                <div class="btn-toolbar flex-wrap" role="toolbar">
+                                                    <button class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                            data-header="254">Poll (254)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                            data-header="248">Status (248)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                            data-header="229">Read Credit/Error (229)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary mr-2 mb-2"
+                                                            data-header="241">SW Rev (241)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary mr-2 mb-2"
+                                                            data-header="242">Serial # (242)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary mr-2 mb-2"
+                                                            data-header="246">Manufacturer (246)
+                                                    </button>
+                                                </div>
+                                                <hr class="my-2">
+                                                <div class="btn-toolbar flex-wrap" role="toolbar">
+                                                    <button class="btn btn-sm btn-success mr-2 mb-2" data-header="228"
+                                                            data-hex="01">Master Enable (228,01)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger mr-2 mb-2" data-header="228"
+                                                            data-hex="00">Master Disable (228,00)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-success mr-2 mb-2" data-header="231"
+                                                            data-hex="FFFF">Enable All Channels (231,FFFF)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger mr-2 mb-2" data-header="231"
+                                                            data-hex="0000">Disable All Channels (231,0000)
+                                                    </button>
+                                                </div>
+
+                                                <!-- Auto buttons (Coin) -->
+                                                <hr class="my-3">
+                                                <div class="mb-2">
+                                                    <div class="small text-muted mb-2">Auto coin komandos</div>
+
+                                                    <input id="autoHeaderFilterCoin"
+                                                           class="form-control form-control-sm mb-2"
+                                                           placeholder="Filtras: inhibit / credit / 229 / 0xE5">
+
+                                                    <div id="autoHeaderButtonsCoin" class="d-flex flex-wrap"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="tab-pane fade" id="pane-hopper" role="tabpanel">
+                                                <div class="small text-muted mb-2">
+                                                    Smart payout fiksuotas <b>€2</b>. Suma turi būti kartotinė iš €2.
+                                                </div>
+                                                <div class="btn-toolbar flex-wrap" role="toolbar">
+                                                    <button class="btn btn-sm btn-warning mr-2 mb-2"
+                                                            id="btnHopperEnable"><i class="fas fa-power-off mr-1"></i>Enable
+                                                        (164)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                            data-header="166">Status (166)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                            data-header="168">Dispense Count (168)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                            data-header="171">Hopper Coin (171)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger mr-2 mb-2" id="btnHopperStop">
+                                                        <i class="fas fa-stop mr-1"></i>Emergency Stop (172)
+                                                    </button>
+                                                </div>
+                                                <hr class="my-2">
+                                                <div class="form-row">
+                                                    <div class="col-md-4">
+                                                        <label class="mb-1">Išmokėjimo suma (€)</label>
+                                                        <input id="hopperAmount" class="form-control form-control-sm"
+                                                               type="number" step="2" min="0" value="2">
+                                                        <small class="text-muted">Tik €2 monetos</small>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="mb-1">Monetos</label>
+                                                        <input id="hopperCoins" class="form-control form-control-sm"
+                                                               type="number" readonly>
+                                                        <small class="text-muted">suma / 2</small>
+                                                    </div>
+                                                    <div class="col-md-4 d-flex align-items-end">
+                                                        <button class="btn btn-sm btn-primary w-100" id="btnHopperPay">
+                                                            <i class="fas fa-euro-sign mr-1"></i>Pay (167)
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="btn-group btn-group-sm mt-2" role="group">
+                                                    <button class="btn btn-outline-primary" data-quick-eur="2">€2
+                                                    </button>
+                                                    <button class="btn btn-outline-primary" data-quick-eur="4">€4
+                                                    </button>
+                                                    <button class="btn btn-outline-primary" data-quick-eur="10">€10
+                                                    </button>
+                                                    <button class="btn btn-outline-primary" data-quick-eur="20">€20
+                                                    </button>
+                                                </div>
+
+                                                <!-- Auto buttons (Hopper) -->
+                                                <hr class="my-3">
+                                                <div class="mb-2">
+                                                    <div class="small text-muted mb-2">Auto hopper komandos</div>
+
+                                                    <input id="autoHeaderFilterHopper"
+                                                           class="form-control form-control-sm mb-2"
+                                                           placeholder="Filtras: payout / dispense / 167 / 0xA7">
+
+                                                    <div id="autoHeaderButtonsHopper" class="d-flex flex-wrap"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="tab-pane fade" id="pane-recycler" role="tabpanel">
+                                                <div class="small text-muted mb-2">
+                                                    Escrow naudoja <b>Route bill (154)</b>: priimti (01) arba grąžinti (00). Auto-poll naudoja (159).
+                                                </div>
+                                                <div class="btn-toolbar flex-wrap" role="toolbar">
+                                                    <button class="btn btn-sm btn-success mr-2 mb-2"
+                                                            id="btnEscrowStack"><i class="fas fa-check mr-1"></i>Priimti / Stack
+                                                        (154,01)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger mr-2 mb-2"
+                                                            id="btnEscrowReturn"><i class="fas fa-undo mr-1"></i>Grąžinti
+                                                        (154,00)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                            data-header="159">Bill Events (159)
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary mr-2 mb-2"
+                                                            data-header="157">Bill ID (157)
+                                                    </button>
+                                                </div>
+                                                <hr class="my-2">
+                                                <div class="form-row">
+                                                    <div class="col-md-4">
+                                                        <label class="mb-1">Poll intervalas (ms)</label>
+                                                        <input id="billPollMs" class="form-control form-control-sm"
+                                                               type="number" min="200" max="5000" value="250">
+                                                    </div>
+                                                    <div class="col-md-8 d-flex align-items-end">
+                                                        <button class="btn btn-sm btn-outline-primary mr-2"
+                                                                id="btnStartBillPoll"><i class="fas fa-play mr-1"></i>Pradėti auto-poll
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-secondary"
+                                                                id="btnStopBillPoll"><i class="fas fa-stop mr-1"></i>Stabdyti
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Auto buttons (Recycler) -->
+                                                <hr class="my-3">
+                                                <div class="mb-2">
+                                                    <div class="small text-muted mb-2">Auto recycler komandos</div>
+
+                                                    <input id="autoHeaderFilterRecycler"
+                                                           class="form-control form-control-sm mb-2"
+                                                           placeholder="Filtras: bill / escrow / 154 / 0x9A">
+
+                                                    <div id="autoHeaderButtonsRecycler" class="d-flex flex-wrap"></div>
+                                                </div>
+                                            </div>
+
+                                            <!-- =========================
+                                                 Custom tab
+                                                 ========================= -->
+                                            <div class="tab-pane fade" id="pane-custom" role="tabpanel"
+                                                 aria-labelledby="tab-custom">
+                                                <div class="p-2">
+
+                                                    <!-- Manual send -->
+                                                    <div class="form-row align-items-end">
+                                                        <div class="col-sm-3 mb-2">
+                                                            <label class="small text-muted mb-1" for="customHeader">Header
+                                                                (0–255)</label>
+                                                            <input id="customHeader" type="number"
+                                                                   class="form-control form-control-sm" min="0"
+                                                                   max="255" value="254">
+                                                        </div>
+
+                                                        <div class="col-sm-6 mb-2">
+                                                            <label class="small text-muted mb-1" for="customData">Data
+                                                                (hex, optional)</label>
+                                                            <input id="customData" type="text"
+                                                                   class="form-control form-control-sm"
+                                                                   placeholder="pvz. 01 arba FFFF">
+                                                            <small class="form-text text-muted">Be tarpų. Lyginio ilgio hex eilutė. Tuščia = be duomenų.</small>
+                                                        </div>
+
+                                                        <div class="col-sm-3 mb-2">
+                                                            <button id="btnSendCustom" type="button"
+                                                                    class="btn btn-sm btn-primary btn-block">
+                                                                Siųsti
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mt-2">
+                                                        <div id="cmdResult" class="small text-muted">—</div>
+                                                    </div>
+
+                                                    <hr class="my-3">
+
+                                                    <!-- Static quick buttons (optional; keep/remove as you like) -->
+                                                    <div class="mb-2">
+                                                        <div class="small text-muted mb-2">Greitos komandos</div>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                                data-header="254">
+                                                            Simple poll (254)
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                                data-header="248">
+                                                            Status (248)
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                                data-header="241">
+                                                            Software revision (241)
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                                data-header="242">
+                                                            Serial number (242)
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                                data-header="244">
+                                                            Header 244
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                                data-header="245">
+                                                            Equipment category (245)
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                                                data-header="246">
+                                                            Manufacturer / Product (246)
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-danger mr-2 mb-2"
+                                                                data-header="253">
+                                                            Reset (253)
+                                                        </button>
+
+                                                        <button type="button" class="btn btn-sm btn-success mr-2 mb-2"
+                                                                data-header="228" data-hex="01">
+                                                            Master Enable (228, 01)
+                                                        </button>
+
+                                                        <button type="button" class="btn btn-sm btn-warning mr-2 mb-2"
+                                                                data-header="231" data-hex="FFFF">
+                                                            Enable All Channels (231, FFFF)
+                                                        </button>
+                                                    </div>
+
+                                                    <hr class="my-3">
+
+                                                    <!-- Autogenerated buttons (from thesaurus.py via /api/headers) -->
+                                                    <div class="mb-2">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="small text-muted mb-2">Auto komandos (iš thesaurus.py)</div>
+                                                            <button id="btnReloadAutoHeaders" type="button"
+                                                                    class="btn btn-sm btn-outline-secondary mb-2">
+                                                                Perkrauti
+                                                            </button>
+                                                        </div>
+
+                                                        <input id="autoHeaderFilter"
+                                                               class="form-control form-control-sm mb-2"
+                                                               placeholder="Filtras: poll / inhibit / 244 / 0xF6">
+
+                                                        <div id="autoHeaderButtons" class="d-flex flex-wrap"></div>
+
+                                                        <small class="form-text text-muted mt-2">
+                                                            Šie mygtukai sugeneruojami vykdymo metu iš
+                                                            <code>HEADERS</code> (<code>app/core/thesaurus.py</code>).
+                                                        </small>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-stream mr-1"></i> Last TX/RX</h3>
+                                <div class="card-tools"><span class="badge badge-light">latest 12</span></div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="thead-light">
+                                        <tr>
+                                            <th style="width:110px">Time</th>
+                                            <th style="width:55px">Dir</th>
+                                            <th style="width:70px">From</th>
+                                            <th style="width:70px">To</th>
+                                            <th>HEX</th>
+                                            <th>Decoded</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="controllerFramesTbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
-                  </div>
                 </div>
-
-              </div>
             </div>
+        </section>
+    </div>
 
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-stream mr-1"></i> Last TX/RX</h3>
-                <div class="card-tools"><span class="badge badge-light">latest 12</span></div>
-              </div>
-              <div class="card-body p-0">
-                <div class="table-responsive">
-                  <table class="table table-sm table-hover mb-0">
-                    <thead class="thead-light">
-                      <tr>
-                        <th style="width:110px">Time</th>
-                        <th style="width:55px">Dir</th>
-                        <th style="width:70px">From</th>
-                        <th style="width:70px">To</th>
-                        <th>HEX</th>
-                        <th>Decoded</th>
-                      </tr>
-                    </thead>
-                    <tbody id="controllerFramesTbody"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <footer class="main-footer">
-    <strong>ccTalk Logger Enterprise</strong>
-    <div class="float-right d-none d-sm-inline">Local UI</div>
-  </footer>
+    <footer class="main-footer">
+        <strong>ccTalk Logger Enterprise</strong>
+        <div class="float-right d-none d-sm-inline">Local UI</div>
+    </footer>
 </div>
 
 <script>window.PAGE_ID="controller";</script>
