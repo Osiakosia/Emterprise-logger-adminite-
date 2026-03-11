@@ -11,6 +11,7 @@ if __name__ == "__main__":
         host=host,
         port=port,
         debug=False,
-        threaded=True,
+        use_reloader=False,
+        # threaded=True,
         # IMPORTANT: prevents double-start (serial port opens twice)
     )

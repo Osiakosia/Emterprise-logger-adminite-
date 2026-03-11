@@ -86,6 +86,7 @@ HEADERS: Dict[int, str] = {
     0xA5: "Modify Variable Set",                    # 165
     0xA6: "Request hopper status",                  # 166
     0xA7: "Dispense hopper coins",                  # 167
+    0xA8: "Request hopper dispense counts",         # 168
     0xAA: "Request base year",                      # 170
     0xAC: "Emergency stop",                         # 172
     0xB2: "Request bank select",                    # 178

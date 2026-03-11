@@ -18,3 +18,89 @@
   background: rgba(0,0,0,0.05);
 }
 .device-card .badge { margin-right: .25rem; }
+.card.device-card.border-success {
+  border-width: 2px;
+  border-color: #28a745 !important;
+  background: #f8fff8;
+}
+.card.device-card {
+  background: #f8faff;
+}
+.card.device-card .card-header {
+  background: #f2f6fc;
+}
+.card.device-card .badge-success {
+  background: #28a745;
+}
+.card.device-card .badge-info {
+  background: #17a2b8;
+}
+.mt-2.small.text-muted.mono {
+  font-family: "JetBrains Mono", "Fira Mono", "Menlo", "Consolas", monospace;
+  font-size: 97%;
+}
+/* SEEN kortelių header žalios */
+.card.device-card.border-success .card-header {
+  background: #daf9e3 !important;
+  border-bottom: 1px solid #28a745;
+}
+
+/* CONFIG kortelių header melsvos */
+.card.device-card:not(.border-success) .card-header {
+  background: #e8f3fa !important;
+  border-bottom: 1px solid #17a2b8;
+}
+
+/* Optional: kad dar šiek tiek kontrasto būtų */
+.card.device-card .card-header {
+  font-weight: 500;
+}
+#btnIdentifyAllSeen {
+  font-size: 1.05rem;
+  height: 48px;
+  line-height: 1.5;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  border-radius: 0.3rem;
+  margin-bottom: 0.1rem;
+  font-weight: 500;
+}
+.controller-action-btn {
+  min-height: 94px;
+  height: 94px;
+  max-height: 110px;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-radius: 0.8rem;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.2rem 0.3rem 0.2rem;
+  margin-bottom: 0;
+}
+.controller-action-btn i {
+  font-size: 2.1rem;
+  margin-bottom: 0.3em;
+  display: block;
+}
+.controller-action-btn {
+  min-height: 94px;
+  height: 94px;
+  max-height: 110px;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-radius: 0.8rem;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.2rem 0.3rem 0.2rem;
+}
+.controller-action-btn i {
+  font-size: 2.1rem;
+  margin-bottom: 0.3em;
+  display: block;
+}

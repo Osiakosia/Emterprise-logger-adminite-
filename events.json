@@ -8,3 +8,22 @@
     "desc": "Payout event"
   }
 }
+
+{
+  "0":  "Idle / No event",
+  "1":  "Note stacked",
+  "2":  "Note returned",
+  "3":  "Escrow detected",
+  "4":  "Stacker full",
+  "5":  "Bill jam",
+  "6":  "Cashbox removed",
+  "7":  "Cashbox replaced",
+  "8":  "Cheated / string detected",
+  "9":  "Invalid bill",
+  "10": "Transport open",
+  "11": "Sensor failure",
+  "12": "ROM checksum error",
+  "13": "Fraud detected",
+  "14": "Calibration needed",
+  "15": "Device busy"
+}

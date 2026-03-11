@@ -29,6 +29,23 @@ const setBadge = (el, cls, txt) => {
   el.textContent = txt;
 };
 
+function setHopperStatus(msg, kind = "info") {
+  const el = qs("hopperStatus");
+  if (!el) return;
+
+  el.textContent = String(msg || "");
+
+  // Bootstrap spalvos
+  el.className =
+    kind === "error"
+      ? "small mt-2 text-danger"
+      : kind === "ok"
+        ? "small mt-2 text-success"
+        : kind === "warn"
+          ? "small mt-2 text-warning"
+          : "small mt-2 text-muted";
+}
+
 // -------------------------
 // API calls
 // -------------------------
@@ -60,6 +77,55 @@ async function apiHeaders() {
   const r = await fetch("/api/headers", { cache: "no-store" });
   if (!r.ok) throw new Error("headers");
   return await r.json();
+}
+
+async function apiStartHopperPayoutAsync(dest, coins, resetBeforePayout = false) {
+  const body = {
+    dest: Number(dest),
+    coins: Number(coins),
+    reset_before_payout: !!resetBeforePayout,
+    quiet: true,
+  };
+
+  const r = await fetch("/api/driver/hopper/payout_async", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.ok === false) throw new Error(j.error || "hopper payout_async");
+  if (!j.job_id) throw new Error("hopper payout_async: missing job_id");
+  return j.job_id;
+}
+
+async function apiJob(jobId) {
+  const r = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`, { cache: "no-store" });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.ok === false) throw new Error(j.error || "job");
+  return j.job;
+}
+
+async function apiWaitJob(jobId, { timeoutMs = 20000, intervalMs = 300, onTick = null } = {}) {
+  const t0 = Date.now();
+
+  while (true) {
+    const job = await apiJob(jobId);
+
+    if (typeof onTick === "function") {
+      try {
+        onTick(job);
+      } catch (_) {}
+    }
+
+    if (job.status !== "running") return job;
+
+    if (Date.now() - t0 > timeoutMs) {
+      throw new Error(`job timeout (${jobId})`);
+    }
+
+    await new Promise((res) => setTimeout(res, intervalMs));
+  }
 }
 
 // -------------------------
@@ -528,35 +594,86 @@ function bindHopper() {
     });
   });
 
+  // Enable
   qs("btnHopperEnable")?.addEventListener("click", async () => {
     const addr = requireAddr();
     if (addr === null) return;
-    await apiSend(addr, 164, "").catch(() => {});
+
+    try {
+      setHopperStatus("Sending enable…", "info");
+      await apiSend(addr, 164, "");
+      setHopperStatus("Enable sent.", "info");
+    } catch (e) {
+      setHopperStatus(`Enable error: ${e?.message || e}`, "error");
+    }
   });
 
+  // Stop
   qs("btnHopperStop")?.addEventListener("click", async () => {
     const addr = requireAddr();
     if (addr === null) return;
-    await apiSend(addr, 172, "").catch(() => {});
+
+    try {
+      setHopperStatus("Sending emergency stop…", "warn");
+      await apiSend(addr, 172, "");
+      setHopperStatus("Emergency stop sent.", "warn");
+    } catch (e) {
+      setHopperStatus(`Stop error: ${e?.message || e}`, "error");
+    }
   });
 
+  // Pay (smart payout via driver job)
   qs("btnHopperPay")?.addEventListener("click", async () => {
     const addr = requireAddr();
     if (addr === null) return;
 
     const c = hopperCoins();
     if (c <= 0) {
-      alert("Amount must be multiple of €2");
+      setHopperStatus("Amount must be multiple of €2", "warn");
       return;
     }
     if (c > 255) {
-      alert("Max 255 coins");
+      setHopperStatus("Max 255 coins", "warn");
       return;
     }
 
-    await apiSend(addr, 167, Number(c).toString(16).padStart(2, "0"));
+    const btn = qs("btnHopperPay");
+    if (btn) btn.disabled = true;
+
+    try {
+      setHopperStatus("Starting payout…", "info");
+
+      const jobId = await apiStartHopperPayoutAsync(addr, c, false);
+
+      const job = await apiWaitJob(jobId, {
+        timeoutMs: 20000,
+        intervalMs: 300,
+        onTick: (job) => {
+          const pct =
+            job.progress !== undefined && job.progress !== null
+              ? Math.round(Number(job.progress) * 100)
+              : null;
+
+          const ptxt = pct === null || Number.isNaN(pct) ? "" : ` ${pct}%`;
+          const msg = job.message ? ` — ${job.message}` : "";
+          setHopperStatus(`Payout running${ptxt}${msg}`, "info");
+        },
+      });
+
+      if (job.status === "done") {
+        const delta = job?.result?.result?.delta_a8;
+        setHopperStatus(`Payout done. Coins=${c}. delta_a8=${delta ?? "?"}`, "ok");
+      } else {
+        setHopperStatus(`Payout failed: ${job.error || job.message || job.status}`, "error");
+      }
+    } catch (e) {
+      setHopperStatus(`Payout error: ${e?.message || e}`, "error");
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   });
 
+  // initial compute
   hopperCoins();
 }
 
@@ -623,25 +740,29 @@ async function scan() {
 
   const s = Number(qs("scanStart")?.value || 1);
   const e = Number(qs("scanEnd")?.value || 50);
-  const d = Number(qs("scanDelay")?.value || 80);
 
   const st = qs("scanStatus");
   if (st) st.textContent = "Scanning…";
 
-  for (let a = s; a <= e; a++) {
-    if (STOP) break;
+  try {
+    const r = await fetch("/api/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ start: s, end: e }),
+    });
 
-    try {
-      await apiSend(a, 254, "");
-    } catch (_) {
-      // ignore
-    }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.ok === false) throw new Error(j.error || "scan");
 
-    if (st) st.textContent = `Scan ${a}/${e}`;
-    if (d) await new Promise((r) => setTimeout(r, d));
+    const found = Array.isArray(j.found) ? j.found : [];
+    if (st) st.textContent = `Done. Found: ${found.length ? found.join(", ") : "none"}`;
+
+    // optional: refresh device list/frames after scan
+    await refresh().catch(() => {});
+  } catch (err) {
+    console.error(err);
+    if (st) st.textContent = "Scan error";
   }
-
-  if (st) st.textContent = STOP ? "Stopped" : "Done";
 }
 
 function bindScan() {
@@ -654,22 +775,42 @@ function bindScan() {
 // -------------------------
 // Refresh loop
 // -------------------------
+let REFRESH_IN_FLIGHT = false;
+
 async function refresh() {
-  const st = await apiStatus();
+  if (REFRESH_IN_FLIGHT) return;
+  REFRESH_IN_FLIGHT = true;
 
-  updateConn(st);
-  renderDevices(st.devices || []);
-  renderFrames(st.frames || []);
-
-  // update health for currently selected device
-  const sel = (qs("selAddr")?.textContent || "").trim();
-  const a = sel === "" || sel === "—" ? null : Number(sel);
-
-  if (Number.isFinite(a) && Array.isArray(st.devices)) {
-    const d = st.devices.find((x) => Number(x.address) === a);
-    if (d) updateHealth(d);
+  try {
+    const st = await apiStatus(); // arba apiGet("/api/status")
+    updateConn(st);
+    renderDevices(st.devices || []);
+    renderFrames(st.frames || []);
+  } catch (e) {
+    // čia tik atnaujink badge, bet nemesk į console 100 kartų
+    setBadge(qs("connBadge"), "badge badge-secondary badge-pill", "TIMEOUT");
+  } finally {
+    REFRESH_IN_FLIGHT = false;
   }
 }
+
+function appendAcceptorTerminal(msg, opts = {}) {
+  const term = document.getElementById("acceptorTerminal");
+  if (!term) return;
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+  const timestamp = `[${hh}:${mm}:${ss}]`;
+  const line = `<div${opts.error ? ' style="color:#e77"' : ''}>${timestamp} ${msg}</div>`;
+  term.insertAdjacentHTML("beforeend", line);
+  term.scrollTop = term.scrollHeight;
+}
+
+qs("btnAcceptorInfo")?.addEventListener("click", () => appendAcceptorTerminal("Sent: Info request"));
+qs("btnAcceptorEvents")?.addEventListener("click", () => appendAcceptorTerminal("Sent: Events/Credits request"));
+qs("btnAcceptorStatus")?.addEventListener("click", () => appendAcceptorTerminal("Sent: Status request"));
+qs("btnAcceptorAutotest")?.addEventListener("click", () => appendAcceptorTerminal("Sent: Autotest request"));
 
 function startAuto() {
   if (AUTO) return;
@@ -700,6 +841,45 @@ function init() {
     this.checked ? startAuto() : stopAuto();
   });
 
+  // --- Coin Acceptor mygtukai ---
+  qs("btnAcceptorInfo")?.addEventListener("click", () => {
+    appendAcceptorTerminal("Sent: Info request");
+    fetch('/api/acceptor?action=info')
+      .then(r => r.text())
+      .then(log => appendAcceptorTerminal(log))
+      .catch(e => appendAcceptorTerminal("Error: " + e, {error:true}));
+  });
+
+  qs("btnAcceptorEvents")?.addEventListener("click", () => {
+    appendAcceptorTerminal("Sent: Events request");
+    fetch('/api/acceptor?action=events')
+      .then(r => r.text())
+      .then(log => appendAcceptorTerminal(log))
+      .catch(e => appendAcceptorTerminal("Error: " + e, {error:true}));
+  });
+
+  qs("btnAcceptorStatus")?.addEventListener("click", () => {
+    appendAcceptorTerminal("Sent: Status request");
+    fetch('/api/acceptor?action=status')
+      .then(r => r.text())
+      .then(log => appendAcceptorTerminal(log))
+      .catch(e => appendAcceptorTerminal("Error: " + e, {error:true}));
+  });
+
+  qs("btnAcceptorAutotest")?.addEventListener("click", () => {
+    appendAcceptorTerminal("Sent: Autotest request");
+    fetch('/api/acceptor?action=autotest')
+      .then(r => r.text())
+      .then(log => appendAcceptorTerminal(log))
+      .catch(e => appendAcceptorTerminal("Error: " + e, {error:true}));
+  });
+
+  // --- Terminalo Clear mygtukas ---
+  qs("btnClearTerminal")?.addEventListener("click", () => {
+    const term = qs("acceptorTerminal");
+    if (term) term.innerHTML = '<div class="text-muted">Acceptor log will appear here…</div>';
+  });
+
   // --- Per-tab header filters ---
   qs("autoHeaderFilterCoin")?.addEventListener("input", () => {
     const { common, coin } = splitHeaders(AUTO_HEADERS_CACHE);
@@ -722,7 +902,6 @@ function init() {
 
   // load + render all header lists
   loadAutoHeaders().catch(() => {});
-
   refresh().catch(() => {});
   startAuto();
 }

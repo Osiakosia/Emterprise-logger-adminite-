@@ -110,7 +110,8 @@
                                 <div id="deviceList" class="device-list"></div>
                                 <hr class="my-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="font-weight-bold"><i class="fas fa-radar mr-1"></i> Skenuoti adresus</div>
+                                    <div class="font-weight-bold"><i class="fas fa-radar mr-1"></i> Skenuoti adresus
+                                    </div>
                                     <span class="small text-muted" id="scanStatus">—</span>
                                 </div>
                                 <div class="form-row">
@@ -138,6 +139,52 @@
                                             class="fas fa-stop mr-1"></i>Stabdyti
                                     </button>
                                 </div>
+                                <!-- 4 action mygtukai -->
+                                <div class="row mb-3 mt-1">
+                                    <div class="col-lg-3 col-md-6 col-12 mb-1">
+                                        <button id="btnAcceptorInfo"
+                                                class="btn btn-info btn-block btn-lg controller-action-btn">
+                                            <i class="fas fa-info-circle"></i>
+                                            Info
+                                        </button>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6 col-12 mb-1">
+                                        <button id="btnAcceptorEvents"
+                                                class="btn btn-primary btn-block btn-lg controller-action-btn">
+                                            <i class="fas fa-list-alt"></i>
+                                            Events
+                                        </button>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6 col-12 mb-1">
+                                        <button id="btnAcceptorStatus"
+                                                class="btn btn-success btn-block btn-lg controller-action-btn">
+                                            <i class="fas fa-heartbeat"></i>
+                                            Status
+                                        </button>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6 col-12 mb-1">
+                                        <button id="btnAcceptorAutotest"
+                                                class="btn btn-warning btn-block btn-lg controller-action-btn">
+                                            <i class="fas fa-flask"></i>
+                                            Autotest
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Terminalo langas -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-end mb-1">
+                                            <button id="btnClearTerminal" class="btn btn-outline-secondary btn-sm">
+                                                <i class="fas fa-eraser mr-1"></i> Clear
+                                            </button>
+                                        </div>
+                                        <div id="acceptorTerminal" class="bg-dark text-monospace text-light rounded p-3"
+                                             style="min-height:180px; height:340px; max-height:360px; overflow:auto; font-size:1.03rem; border:1.5px solid #222;">
+                                            <div class="text-muted">Acceptor log will appear here…</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -152,7 +199,8 @@
                                 <div class="callout callout-info">
                                     <h5 class="mb-1"><i class="fas fa-info-circle mr-1"></i>Kaip tai veikia</h5>
                                     <div class="small">
-                                        Pasirink įrenginį kairėje, tada naudok tab’us siųsti device-specific ccTalk komandas.
+                                        Pasirink įrenginį kairėje, tada naudok tab’us siųsti device-specific ccTalk
+                                        komandas.
                                     </div>
                                 </div>
 
@@ -187,7 +235,8 @@
 
                                             <div class="tab-pane fade show active" id="pane-coin" role="tabpanel">
                                                 <div class="small text-muted mb-2">
-                                                    Coin greitos komandos: status (248), buffered credit/error (229), inhibit (228/231).
+                                                    Coin greitos komandos: status (248), buffered credit/error (229),
+                                                    inhibit (228/231).
                                                 </div>
                                                 <div class="btn-toolbar flex-wrap" role="toolbar">
                                                     <button class="btn btn-sm btn-outline-primary mr-2 mb-2"
@@ -290,7 +339,7 @@
                                                     <button class="btn btn-outline-primary" data-quick-eur="20">€20
                                                     </button>
                                                 </div>
-
+                                                <div id="hopperStatus" class="small mt-2 text-muted"></div>
                                                 <!-- Auto buttons (Hopper) -->
                                                 <hr class="my-3">
                                                 <div class="mb-2">
@@ -306,11 +355,13 @@
 
                                             <div class="tab-pane fade" id="pane-recycler" role="tabpanel">
                                                 <div class="small text-muted mb-2">
-                                                    Escrow naudoja <b>Route bill (154)</b>: priimti (01) arba grąžinti (00). Auto-poll naudoja (159).
+                                                    Escrow naudoja <b>Route bill (154)</b>: priimti (01) arba grąžinti
+                                                    (00). Auto-poll naudoja (159).
                                                 </div>
                                                 <div class="btn-toolbar flex-wrap" role="toolbar">
                                                     <button class="btn btn-sm btn-success mr-2 mb-2"
-                                                            id="btnEscrowStack"><i class="fas fa-check mr-1"></i>Priimti / Stack
+                                                            id="btnEscrowStack"><i class="fas fa-check mr-1"></i>Priimti
+                                                        / Stack
                                                         (154,01)
                                                     </button>
                                                     <button class="btn btn-sm btn-danger mr-2 mb-2"
@@ -333,7 +384,8 @@
                                                     </div>
                                                     <div class="col-md-8 d-flex align-items-end">
                                                         <button class="btn btn-sm btn-outline-primary mr-2"
-                                                                id="btnStartBillPoll"><i class="fas fa-play mr-1"></i>Pradėti auto-poll
+                                                                id="btnStartBillPoll"><i class="fas fa-play mr-1"></i>Pradėti
+                                                            auto-poll
                                                         </button>
                                                         <button class="btn btn-sm btn-outline-secondary"
                                                                 id="btnStopBillPoll"><i class="fas fa-stop mr-1"></i>Stabdyti
@@ -377,7 +429,8 @@
                                                             <input id="customData" type="text"
                                                                    class="form-control form-control-sm"
                                                                    placeholder="pvz. 01 arba FFFF">
-                                                            <small class="form-text text-muted">Be tarpų. Lyginio ilgio hex eilutė. Tuščia = be duomenų.</small>
+                                                            <small class="form-text text-muted">Be tarpų. Lyginio ilgio
+                                                                hex eilutė. Tuščia = be duomenų.</small>
                                                         </div>
 
                                                         <div class="col-sm-3 mb-2">
@@ -462,7 +515,9 @@
                                                     <!-- Autogenerated buttons (from thesaurus.py via /api/headers) -->
                                                     <div class="mb-2">
                                                         <div class="d-flex align-items-center justify-content-between">
-                                                            <div class="small text-muted mb-2">Auto komandos (iš thesaurus.py)</div>
+                                                            <div class="small text-muted mb-2">Auto komandos (iš
+                                                                thesaurus.py)
+                                                            </div>
                                                             <button id="btnReloadAutoHeaders" type="button"
                                                                     class="btn btn-sm btn-outline-secondary mb-2">
                                                                 Perkrauti

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from .serial_io import SerialIO
 from .cctalk import build_frame, decode_frame, header_name
@@ -21,19 +21,12 @@ class DeviceController:
         self.host_address = int(host_address)
 
     def send(self, dest: int, header: int, data: bytes = b"") -> Dict[str, Any]:
-        def send(self, dest: int, header: int, data: bytes = b"") -> Dict[str, Any]:
-            if self.logger:
-                self.logger.warning(
-                    "DeviceController logger=%s handlers=%s",
-                    getattr(self.logger, "name", None),
-                    [type(h).__name__ for h in getattr(self.logger, "handlers", [])],
-                )
-            frame = build_frame(dest=int(dest), src=self.host_address, header=int(header), data=data)
-            ...
         frame = build_frame(dest=int(dest), src=self.host_address, header=int(header), data=data)
 
         # TX to wire
-        self.sio.write(frame)
+        n = self.sio.write(frame)
+        if n != len(frame) and self.logger:
+            self.logger.warning("Serial write short: %s/%s bytes", n, len(frame))
 
         # Store TX in STATE
         dec = decode_frame(frame)
@@ -45,8 +38,8 @@ class DeviceController:
             decoded={**dec.to_dict(), "header_name": header_name(dec.header)},
         )
         STATE.add_frame(rec)
-        # update devices table
-        STATE.note_device(int(dest))
+        # Do NOT create devices from TX only.
+        # Devices should be added when we actually receive RX or after identify/scan confirms presence.
 
         if self.logger:
             self.logger.info("TX %s", frame.hex())

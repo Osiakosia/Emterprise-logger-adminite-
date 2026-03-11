@@ -46,17 +46,35 @@ def try_parse_frames(buffer: bytearray) -> Tuple[List[bytes], bytearray]:
     # ccTalk: [dest][len][src][header][data...][checksum]
     frames: List[bytes] = []
     i = 0
+
+    # Safety: prevent "absurd length" from stalling parsing on noisy lines.
+    MAX_LEN = 128
+
     while True:
+        # Need at least dest,len,src,header,checksum
         if len(buffer) - i < 5:
             break
-        dest = buffer[i]
-        length = buffer[i+1]
+
+        length = buffer[i + 1]
+
+        # If length is insane, shift by 1 byte and resync
+        if length > MAX_LEN:
+            i += 1
+            continue
+
         total = 5 + length
         if len(buffer) - i < total:
             break
-        frame = bytes(buffer[i:i+total])
-        frames.append(frame)
-        i += total
+
+        frame = bytes(buffer[i : i + total])
+
+        # Accept only valid checksum frames; otherwise resync by 1 byte
+        if validate_frame(frame):
+            frames.append(frame)
+            i += total
+        else:
+            i += 1
+
     remainder = buffer[i:]
     return frames, bytearray(remainder)
 
